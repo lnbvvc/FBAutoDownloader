@@ -1,0 +1,30 @@
+plugins {
+    id 'com.android.application'
+}
+
+// تصحيح تلقائي لملف المانيفست ليتوافق مع Gradle 8
+def mf = file("src/main/AndroidManifest.xml")
+if (mf.exists()) {
+    def txt = mf.getText("UTF-8")
+    if (txt.contains('package="com.example.fbdownloader"')) {
+        mf.write(txt.replace('package="com.example.fbdownloader"', ''), "UTF-8")
+    }
+}
+
+android {
+    namespace 'com.example.fbdownloader'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.example.fbdownloader"
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName "1.0"
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
