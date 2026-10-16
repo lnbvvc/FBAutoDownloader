@@ -31,12 +31,11 @@ public class ShareActivity extends Activity {
                     SharedPreferences prefs = getSharedPreferences("AutoDLPrefs", MODE_PRIVATE);
                     String quality = prefs.getString("pref_quality", "HD");
 
-                    Toast.makeText(this, "جاري بدء التحميل التلقائي (" + quality + ")...", Toast.LENGTH_SHORT).show();
-                    processInBackground(cleanUrl, quality);
+                    Toast.makeText(this, "🚀 جاري معالجة فيديو فيسبوك...", Toast.LENGTH_SHORT).show();
+                    resolveAndDownload(cleanUrl, quality);
                 }
             }
         }
-        // إغلاق الشاشة الشفافة فوراً باش تبقى مرتاح فـ تصفح فيسبوك
         finish();
     }
 
@@ -45,13 +44,30 @@ public class ShareActivity extends Activity {
         return m.find() ? m.group(1) : null;
     }
 
-    private void processInBackground(String pageUrl, String preferredQuality) {
-        Context appCtx = getApplicationContext();
+    private void resolveAndDownload(String inputUrl, String quality) {
+        Context ctx = getApplicationContext();
         new Thread(() -> {
             try {
-                HttpURLConnection conn = (HttpURLConnection) new URL(pageUrl).openConnection();
-                conn.setInstanceFollowRedirects(true);
-                conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36");
+                // تتبع إعادة التوجيه للرابط (خصوصاً روابط fb.watch أو الروابط القصيرة)
+                String currentUrl = inputUrl;
+                for (int i = 0; i < 5; i++) {
+                    HttpURLConnection redirectionConn = (HttpURLConnection) new URL(currentUrl).openConnection();
+                    redirectionConn.setInstanceFollowRedirects(false);
+                    redirectionConn.setRequestProperty("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+                    int status = redirectionConn.getResponseCode();
+                    if (status == HttpURLConnection.HTTP_MOVED_TEMP || status == HttpURLConnection.HTTP_MOVED_PERM || status == HttpURLConnection.HTTP_SEE_OTHER) {
+                        String newLoc = redirectionConn.getHeaderField("Location");
+                        if (newLoc != null) {
+                            currentUrl = newLoc;
+                            continue;
+                        }
+                    }
+                    break;
+                }
+
+                // جلب صفحة الفيسبوك واستخراج روابط الفيديو المباشرة
+                HttpURLConnection conn = (HttpURLConnection) new URL(currentUrl).openConnection();
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.5 Mobile/15E148 Safari/604.1");
                 conn.setRequestProperty("Accept", "text/html,application/xhtml+xml");
 
                 BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
@@ -62,24 +78,33 @@ public class ShareActivity extends Activity {
                 }
                 reader.close();
 
-                String content = html.toString();
-                String hdLink = findVideoUrl(content, "(?:playable_url_quality_hd|hd_src|browser_native_hd_url)\"\\s*:\\s*\"([^\"]+)\"");
-                String sdLink = findVideoUrl(content, "(?:playable_url|sd_src|browser_native_sd_url)\"\\s*:\\s*\"([^\"]+)\"");
+                String htmlContent = html.toString();
+                String hdLink = extractRegex(htmlContent, "\"(?:playable_url_quality_hd|hd_src|browser_native_hd_url)\"\\s*:\\s*\"([^\"]+)\"");
+                String sdLink = extractRegex(htmlContent, "\"(?:playable_url|sd_src|browser_native_sd_url)\"\\s*:\\s*\"([^\"]+)\"");
 
-                String finalVideoUrl = "HD".equals(preferredQuality)
-                        ? (hdLink != null ? hdLink : sdLink)
-                        : (sdLink != null ? sdLink : hdLink);
-
-                if (finalVideoUrl != null) {
-                    startSystemDownload(appCtx, finalVideoUrl, preferredQuality);
+                // إذا ما لقاش الرابط بصفة عادية، نجرب صيغة أخرى بديلة لـ og:video
+                if (hdLink == null && sdLink == null) {
+                    hdLink = extractRegex(htmlContent, "property=\"og:video\"\\s+content=\"([^\"]+)\"");
                 }
-            } catch (Exception ignored) {
+
+                String targetUrl = "HD".equals(quality) ? (hdLink != null ? hdLink : sdLink) : (sdLink != null ? sdLink : hdLink);
+
+                if (targetUrl != null) {
+                    triggerDownloadManager(ctx, targetUrl, quality);
+                } else {
+                    // حل احتياطي: في حال تعذر الاستخراج المباشر، إرسال الرابط كملف تحميل عام
+                    triggerDownloadManager(ctx, currentUrl, quality);
+                }
+
+            } catch (Exception e) {
+                // في حال أي خطأ شبكي، يتم الاعتماد على الرابط الأصلي مباشرة
+                triggerDownloadManager(ctx, inputUrl, quality);
             }
         }).start();
     }
 
-    private String findVideoUrl(String html, String regex) {
-        Matcher m = Pattern.compile(regex).matcher(html);
+    private String extractRegex(String content, String regex) {
+        Matcher m = Pattern.compile(regex).matcher(content);
         if (m.find()) {
             return m.group(1)
                     .replace("\\/", "/")
@@ -90,17 +115,21 @@ public class ShareActivity extends Activity {
         return null;
     }
 
-    private void startSystemDownload(Context ctx, String directUrl, String quality) {
-        DownloadManager.Request req = new DownloadManager.Request(Uri.parse(directUrl));
-        String fileName = "FB_" + quality + "_" + System.currentTimeMillis() + ".mp4";
-        req.setTitle("تحميل فيديو فيسبوك (" + quality + ")");
-        req.setDescription("يتم التنزيل تلقائياً...");
-        req.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
-        req.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+    private void triggerDownloadManager(Context ctx, String directUrl, String quality) {
+        try {
+            DownloadManager.Request req = new DownloadManager.Request(Uri.parse(directUrl));
+            String fileName = "FB_Video_" + quality + "_" + System.currentTimeMillis() + ".mp4";
+            
+            req.setTitle("تحميل فيديو فيسبوك (" + quality + ")");
+            req.setDescription("جاري تنزيل الفيديو في الخلفية...");
+            req.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED);
+            req.setDestinationInExternalPublicDir(Environment.DIRECTORY_DOWNLOADS, fileName);
+            req.allowScanningByMediaScanner();
 
-        DownloadManager dm = (DownloadManager) ctx.getSystemService(Context.DOWNLOAD_SERVICE);
-        if (dm != null) {
-            dm.enqueue(req);
-        }
+            DownloadManager dm = (DownloadManager) ctx.getSystemService(Context.DOWNLOAD_SERVICE);
+            if (dm != null) {
+                dm.enqueue(req);
+            }
+        } catch (Exception ignored) {}
     }
 }
