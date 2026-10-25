@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- خلفية الأيقونة بتدرج ليلي عميق -->
+    <path android:pathData="M24,2 L84,2 C96.15,2 106,11.85 106,24 L106,84 C106,96.15 96.15,106 84,106 L24,106 C11.85,106 2,96.15 2,84 L2,24 C2,11.85 11.85,2 24,2 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="10"
+                android:startY="10"
+                android:endX="98"
+                android:endY="98"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#060B19" />
+                <item android:offset="0.55" android:color="#0F172A" />
+                <item android:offset="1.0" android:color="#1E1B4B" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- توهج نيون خلفي (Glow) -->
+    <path android:pathData="M54,54 m-38,0 a38,38 0 1,0 76,0 a38,38 0 1,0 -76,0">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:centerX="54"
+                android:centerY="54"
+                android:gradientRadius="38"
+                android:type="radial">
+                <item android:offset="0.0" android:color="#6600F2FE" />
+                <item android:offset="0.65" android:color="#222563EB" />
+                <item android:offset="1.0" android:color="#00000000" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- إطار دائري مضيء بتدرج السماوي والأزرق الملكي -->
+    <path
+        android:strokeWidth="2.8"
+        android:pathData="M54,18 A36,36 0 1,1 53.9,18 Z">
+        <aapt:attr name="android:strokeColor">
+            <gradient
+                android:startX="20"
+                android:startY="18"
+                android:endX="88"
+                android:endY="90"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#38BDF8" />
+                <item android:offset="0.5" android:color="#2563EB" />
+                <item android:offset="1.0" android:color="#06B6D4" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- جناح تشغيل الفيديو الخلفي (Play Triangle) بتدرج زجاجي -->
+    <path android:pathData="M36,28 C36,24.5 39.8,22.4 42.8,24.2 L78,45.2 C81,47 81,51.2 78,53 L42.8,74 C39.8,75.8 36,73.7 36,70.2 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="36"
+                android:startY="24"
+                android:endX="80"
+                android:endY="74"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#CC1D4ED8" />
+                <item android:offset="1.0" android:color="#990284C7" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- سهم التنزيل الرئيسي الساطع (3D Cyan Gradient) -->
+    <path android:pathData="M47,25 L61,25 C63.2,25 65,26.8 65,29 L65,51 L75.5,51 C77.8,51 79,53.8 77.3,55.5 L56.1,76.7 C54.9,77.9 53.1,77.9 51.9,76.7 L30.7,55.5 C29,53.8 30.2,51 32.5,51 L43,51 L43,29 C43,26.8 44.8,25 47,25 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="54"
+                android:startY="25"
+                android:endX="54"
+                android:endY="78"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#FFFFFF" />
+                <item android:offset="0.45" android:color="#7DD3FC" />
+                <item android:offset="1.0" android:color="#00F2FE" />
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- أيقونة Play داخلية محفورة وسط السهم -->
+    <path
+        android:fillColor="#0F172A"
+        android:pathData="M50,34 L50,47 L61,40.5 Z" />
+
+    <!-- قاعدة الاستقرار المضيئة أسفل السهم -->
+    <path android:pathData="M34,82 L74,82 C75.7,82 77,83.3 77,85 C77,86.7 75.7,88 74,88 L34,88 C32.3,88 31,86.7 31,85 C31,83.3 32.3,82 34,82 Z">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="31"
+                android:startY="85"
+                android:endX="77"
+                android:endY="85"
+                android:type="linear">
+                <item android:offset="0.0" android:color="#2563EB" />
+                <item android:offset="0.5" android:color="#38BDF8" />
+                <item android:offset="1.0" android:color="#2563EB" />
+            </gradient>
+        </aapt:attr>
+    </path>
+</vector>
