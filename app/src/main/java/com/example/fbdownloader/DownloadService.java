@@ -36,7 +36,7 @@ import java.util.regex.Pattern;
 
 public class DownloadService extends Service {
 
-    private static final String CHANNEL_ID = "fb_dl_channel_v3";
+    private static final String CHANNEL_ID = "fb_dl_channel_v4";
     private static final AtomicInteger NOTIF_COUNTER = new AtomicInteger(2001);
     private NotificationManager notifManager;
     private Handler mainHandler;
@@ -82,10 +82,7 @@ public class DownloadService extends Service {
 
     private void executeDownloadFlow(String shareUrl, String quality, int notifId, int startId) {
         try {
-            // 1. فك الروابط المختصرة (share/v و share/r و fb.watch)
             String resolvedUrl = resolveRedirects(shareUrl);
-
-            // 2. استخراج الرابط المباشر عبر 4 مراحل متتالية
             String directMp4 = extractVideoMultiStage(resolvedUrl, shareUrl, quality, notifId);
 
             if (directMp4 == null || directMp4.isEmpty()) {
@@ -94,7 +91,6 @@ public class DownloadService extends Service {
                 return;
             }
 
-            // 3. بدء التنزيل الفعلي مع تحديث الإشعار (النسبة، الحجم، السرعة، الوقت المتبقي)
             downloadStreamWithProgress(directMp4, quality, notifId);
 
         } catch (Exception e) {
@@ -142,19 +138,16 @@ public class DownloadService extends Service {
     }
 
     private String extractVideoMultiStage(String resolvedUrl, String originalUrl, String preferredQuality, int notifId) {
-        // المرحلة 1: استخراج من صفحة الكمبيوتر المباشرة
         String desktopHtml = fetchPageHtml(resolvedUrl,
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36");
         String picked = pickQualityFromHtml(desktopHtml, preferredQuality);
         if (picked != null) return picked;
 
-        // البحث عن رقم الفيديو (Video ID) لاستعماله في المشغل المدمج
         String videoId = extractVideoId(resolvedUrl, desktopHtml);
         String canonicalWatchUrl = (videoId != null)
                 ? "https://www.facebook.com/watch/?v=" + videoId
                 : resolvedUrl;
 
-        // المرحلة 2: استخراج عبر المشغل الرسمي المدمج (plugins/video.php) الذي يتجاوز شاشة الدخول
         updateNotification(notifId, "⏳ جاري فحص المشغل المباشر...", "المرحلة 2 من استخراج الفيديو...", 0, true);
         try {
             String embedUrl = "https://www.facebook.com/plugins/video.php?href="
@@ -165,7 +158,6 @@ public class DownloadService extends Service {
             if (picked != null) return picked;
         } catch (Exception ignored) {}
 
-        // المرحلة 3: استخراج عبر واجهة mbasic وبوت المعاينة
         updateNotification(notifId, "⏳ جاري الاستخراج العميق...", "المرحلة 3 من استخراج الفيديو...", 0, true);
         String mbasicUrl = canonicalWatchUrl.replace("www.facebook.com", "mbasic.facebook.com")
                                             .replace("m.facebook.com", "mbasic.facebook.com");
@@ -187,7 +179,6 @@ public class DownloadService extends Service {
         });
         if (picked != null) return picked;
 
-        // المرحلة 4: المزود الاحتياطي الخارجي (FDown) في حال كان الرابط محمياً
         updateNotification(notifId, "⏳ جاري الاستخراج عبر المزود البديل...", "المرحلة 4...", 0, true);
         picked = extractViaFdownFallback(originalUrl, preferredQuality);
         if (picked == null && !originalUrl.equals(resolvedUrl)) {
