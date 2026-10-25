@@ -2,6 +2,7 @@ plugins {
     id 'com.android.application'
 }
 
+// 1. تصحيح تلقائي لملف المانيفست
 def mf = file("src/main/AndroidManifest.xml")
 if (mf.exists()) {
     def txt = mf.getText("UTF-8")
@@ -9,6 +10,63 @@ if (mf.exists()) {
         mf.write(txt.replace('package="com.example.fbdownloader"', ''), "UTF-8")
     }
 }
+
+// 2. مسح الأيقونة القديمة وتوليد اللوغو 3D الحقيقي (sc.jpeg) تلقائياً
+def drawDir = file("src/main/res/drawable")
+drawDir.mkdirs()
+new File(drawDir, "ic_launcher.xml").delete()
+new File(drawDir, "ic_launcher.png").delete()
+
+def realIconBase64 = """
+UklGRngQAABXRUJQVlA4WAoAAAAQAAAAvwAAvwAAQUxQSKMCAAABkCPbtupG977/Y0E55Igilydgx27unoMx0giUun5kzhvmwBDZqWZAYaM5e3Cq9PSFpeNQ
+EeFIktSw2YHCJaTkByxnGQg1qZE2pcXNl5Xzw6Mx4vC88nJzsSRtTGpURoQm0mb2VfaxeYWx5Kr5MXs1K20SHdnXWvXnPSLBezdmeB8Quf9ZXRvJh6Yipd1L
+B8BbFwLGkhCc9QDc5W5JJB3uRyIylzUBtHsYc9otAM1sTiQZnozKVPYPcD6AAsE74F82JWqGpFRktw70ej/+z4H6rkg6lN80svIZsAFkCBb4vCJGB78msn8L
+50EI73C7L2IG/rfSW8CBFA54W5JkwFyo9XhF6FFtYaBIZf0XLKhh8Wtd0kHyFg7kcLjtP5KYHvTwMZI+c6MjKcZGX2Fk9m++y6/5d7aPP1VTrMVkGbWi0d5n
+H2LyjA+S9MwdWBDFYqdHGFm684Gpgr9bEtO1mq+dZ0yPvpqk69l2TLaxLflQLTe9Zyvvm2XVfM3yb7g+yXLF6PRVCHwVwtW0mnx1IIzLFZVCK3jG8qFVEI11
+K1bOZSsWNRfwnOVxYVSMrLrO24wvu1UxqVRhQRqLqqSq32OHdeO7qsw8ILBWwMOMyJvO26wvvxE9CJa3bDhQ+Rg7vBsfpdyIHd6NRnnxiruuFp9YD+J4++Ql
+uAsvK+xVOYdjLofzQ/Y6PGKvo4n/mvivif+a+K/JsOI/t5D/3Ej+czv5z03lP7eW/9xg/nOb6c/NfgTmlvOfG89/bj9/3wT+vhX8fUPY+7Y8Ar45/H2L6PtG
+8fftou+bxt+3jr5vIH3fRv6+mfR9S+n7xvL37aXvm0zft5q+bzh933b6vvn09xagvzcC/b0d6O9NwX5vDfp7g7Df24T+3izs95Z5vPbGob+3jwAAVlA4IK4N
+AACwQACdASrAAMAAPj0cjESiIaETONS8IAPEsYHYDsvzpHOinqU+g/uH6y6D423Mn7pO2z5iP6bfrT2IvNN5x/pU/1HqK/0P/LdbN6C3ln/uv8I/7e/uh7Qv
+UAXvofi/qrcv7lO7lHj6BP0j59Po39lvgE/XP/o9hz0gCEOZY4Dq0d+wJP5Qr8Si3S6Ciy2/K7C8ntAKl48JLzl5Nqs5x+1MbDI5S5dyQ7K+2v1XaYftSspt
+9dNQknIltZ7sjwccAl08EARWDyZori0Nk4UHIr3Bj4mAIOjJ/WLAOMzhWic2CDwgvuAFmUaU7SxcYbj8X6S8C2B9sWEnoBMW9u7hIINZ00RFKWspOwnMN//b
+uHIIIlsbGrmqLiC5Cz9uMBTY0denPoJAJGVe+ca62B94Fk4i95UzTW93ciHhTuMU9DrjuVNYoMsmtru2P2H4TszQNYnmXyhy555+/fPwiCzfsfEru0QyJvVe
+d4mSz0Hc+pEX7G3BbP8/U+nqSygjQsqe5jR7pv/9YYXbKrxn3g+/5fAnZcr1zACG9HPB2UiDh8yuCgzyOutN1JQrO/Gr2Xc///tDli8dN7L9u7LxHQQsuG71
+cWGRc6LO7cd0+7ak3MjZH7q2rP4zMiYZUUdtzYlIrAj1/o27qO2G8OAp6sg4a7sp//xvJuspufBWwqECsqJOImbukDWwKDxjJRtQ9iAAAP7/2H4gkKhS/8kw
+Dm2bEKwuQVhrBV0oR3ghZiQ/dZUrilgtMbr+Xe6X/8BQyXf52lXlj5AENzMYidBqWU9tDLWmnTt9iNyOPHzXMllLZShlkOESC75EwnPvw0hFWI+PAmKALc2t
+QqXZU1Zo3VvCCwT5YmtdHDGYNZRoJDJBUhBj0Kj6abqMNICuz/gD+zdb/4z7zn+PMCdk1CBERr//C46AdiFGwWgihM5j2CWf9uzSr6hIrFkRvHP6sAhvkO/i
+Zivapp6MeGNnw+MoYrOffWB6mDpawEcflYJ5zIGPaP1H7y9+WSrrbXtC4X+rLY6C+jgds8V+7i1vtJPETZuvz/FjgvP817Yi5uJb3FP+8nIw7srSyoFoIUjv
+apiXLLWLn/gUnd3ArP8y7RAWLhBPgJs0uLrcvekh4V9VZHhrW9/21k6aMUpsQWpYLRh6XRNe3tqm9mmMsUdRewfHal1HzWDtsKWGU7wF3OKSuPWIlIPBr+Tq
+dzvsHbBUNVwQiS/2ROowAgk9m14dwMztgpHvk+pQ9kEHLhRYtDKfD+5MGZ5vs1JXQqp7JOy4DlgbRdV+132fuPSiCNcA6u44ElPgAKEIuEH0sOtQiSrfLzgj
+ttapYc4VBOIosQGr3SUL6vRYIzhdfSLg3nDRE6sIVJSNGkKX5fLQPNVln3QeH1wwmtHbyRFDUicL+/w073pmr0VtF3T9RaFFdkJBMlr2flw3hBAUlb5gOgrW
+1FH55JB6sQNhPLJZvAy8nDX/QV/fPKsqwu/9AOdc+RVKdvQC65iH6oyjml3g+3olLfHxl2sMOpdbq3ywyyP7b9whI5FORCYeFx3nNuRFOEaHu6Q1hvO8/XQp
+i/m2VP9k5apx3qCXyv4AFJ0moTKbAD+1uRCLk/opPCV5g3DRV5Pm/Of+V1wyvUlgK1l64FacEbZYr4GdY5VupSfxHElqKhzRcn5uY5d60rnmMK90DtxbPBt9
+Oq7rpOCps9Cp3PYsREYh8p55jLaryI7vXt38/XaqE73DRaWPDsocrhlCKuop0ecb7LkmIy91zapACm2kNkK6Rv0IRDEmEwfceEsN2m86pRIUZf2lWzAsZJPo
+A8r5TEpXwZbCdeXcY/YNRgdfzHeGdlzefO2H5Y7GQ7P5FI6pImHy7qp2JXThTIArd1+h51FB6IeiEuJFNBkW846ZZkisCnpFhZbExi55i8xwXEjB+Hmpw5hM
+HjY+5qoRtdDxfw38dnK7QRHvfoQ9Y6kmXktc8ZvGgu7mA6StFpgWn/HttyrBPGJnKUZOdm/xzIyvzItP4FptUGadtfj8Rqmh3GHzSYhxSqbTWKDHSGZDPfMI
+GPhvC/+aRYCI/Wwc5h1AEV2DJiKBoQfMbBQQu/81qWtJ5G8wPW2FeflYHjtyEvaDt2bpx70m93DNijU+YYic1978vDupfXKMYI45b01ltn2Wrdn7xT2/1l1D
+kvPzuWfCzZ1wD++UYjdmDLjJPx2/492s3etromtPUF2ZsWv1zWcXz4uxmqscH1xUb44q7NT4CtKV5IaRXjNGvMcNzwKHHkW3pRv1/7rj4sH9sp1jSg0Gg6AR
+1a2pgiqSMImTq7IpfcKYGYXmgoDkG0HuBCbntUo8d5lkjrBz8m3+QsgaPMd658HpBcEUPo7oGzUC0oC5irQvygTF6un6/d3OyD+WNe13uy7NAWHBNssw5u/5
+4xSycqO4lXrdSTtOtQRYL2nYMkwbqCCGIow/L2FzTTpH3MLAoGhv/IjvXHTVVHh9ADDuok25awDzDnC6rLQ0jTA89pqd51SvJV0W7Dy3vDJ66WYt/HgxYzKK
+lREGEbdvBheqNAvIlGRxB2YSKrG3+HUkPKKj2beKD8eAWIP4PzLkUrAsrJiNX0m+PsEoI40iLQrBFwxEWCDnSO+MFT870qF8hax/RjPEnSR5dwp6ZUN6Atqa
+t4o0aFaePZuvMRKdKFBfxxhfiCq9L+TZdFK71vMDMGQx19SSfW5s47y7lIG944LHluNyrw8ww6oCjsMTpV9afs1v/9gCPKMa9idtrflwzMTsuGzlxbl+smSE
+VYTQEYpZmgE/OufIgRjYX9PEe0iHT5by3KC4dxlo3pQ/mGjP3GQ+GTCtrPqOqpN4jtaEh8Se3crsoLjuL2XmTW41VXEtKtn0LDnief4HlDzunHMIWS3odrPv
+N8Dh3ILTIq/GQCAYQF1lEOn5yGbxByMfLeBaiNvoUzA3Yd9xL8JGecq/r1RPFBO3mwXNT7aUlf7QjZZ6MwpxM6GopHWJkQugmGgpDu+6K1v/a/7yS98abG+Z
+vWLCDe041Aoq6unEv5EQ3Wi7jQI6V1euVH5uYKXX6cU3YAaWZO/Q9HnqfGZnQh+4vrqcMqgJu2Fgoy1ZkUzXOrR3E9Tgwn1O8npzMeNDGbiwz1n0W2CUDgJY
+OuZ/JzBxQ+ThuVpE2/vPkCdJyd7tRqn5CwqACZBYozn0TQDHmGYwzTUX11wbzesom5gvbdppGhDJSK4o/ULlhM7D3ad3E6lQj90YK/rVcWr272WYPDqQ+VLu
+g8vzdQ6sY+hJHLvrSHpukOv++62aHtb59SAJ9X33tEcN8zG44zOzp36DjXdV+JSU1P8qXn9O7iApTlOuvI6ZR73mN7e9V+RwOeUvLLP85FmMjy+JD+d1gfuv
+/lo1RvpyTRgbeyDkGr3ikFkFS/Y3pvRyCQjMUuKqjFuhurFhTiSzcp6mD6YH8SK1sd+GfifLcwEITVEcz8SzcWt6rhRL03YZhysgawsUJfZtb6UVn0NGhflh
+/+ZXYcEqA6HtsC+lKJhWVKEVwVxgz36YFV1sztgSV7Tdh6NhfebmSAeJR/G4tUGHT2Sok+lx0TmI2l31AclKPYPR3o69/Aqr4eQ9K1LCGgSU6+lvokaHsxJl
+xRgvHzr5jN2j7XjoSdEuaU+UN1hoPgSTZKY51lg8/3d3Z2Jnx50tpSnztq/qpYqXDLfp2lhakSqMML7xB1Hx654nEEI3cRftYoslO5BqcYp5LsZZjgbftsi7
+7UexEuRip/cX0nN452FJrnJGs3q5CIr8ykS63dkjGFmz7yRFUc6QBtWwo+PHO0DULGu8q3nWWWh5hyyXLy5JYuox0+Ro9UFtfdYgnjtN2LlTZV/dMJ8GPX80
+nYvJw4dVS/4859WMPo1UwPUpvgWr5A2boSFeyA2YPM1eKb7e+BXmEiBv8n6H9IqHjF2Xf074NtUYCCywgLnnYkWXVlFlPFoqePWwjCVHY77hziHx//yiRwJb
+cReOO+WNf0NyAbrTJKC2IGHEzDRW/VcSPtlRVyP19hAT6SFKChVhLm1gEw17WLM4pYuErhuveftNn42pu9qmzoidoAr1lrWKq4AoVXyHF9vN3lhLaWksKhOF
+Riqu4o2pLMo0VPmlbt2qKb4dN0q2+3MT9YehQaBS6sO42vDaRwG+psVdWA6YWW6Hfeh3uMKK2W+4Zen2W5YFlBDA9vCJL6x9jhAIxQ+SpOqSwYA86odWg0OT
+jd6v/tw7sf+VaqYnhA8gXylG/APE1wZkwGsfGq4xiFbBJYAQbFMuj/UcPGXqyPQFGX5vgyUv5CZP/8pAi+FBuvtbwqyqZ7phwpaArX2Ri2+ys5fYVU7mGmLV
+YH8EjYEH/Pl39zYsjSu9vLkHSZIBmVdiHgBbpIRveyESbQ0aQaB3BrkapaY3fHc2GGsV4+aBtZSOk5DfvG8PajhgAfr1CxpCiem2ibYsQP2FlMFTfl4MPMMJ
+2VH+REp7iz4AUA/xWveVkijcEQrecbOh2vrQ7vnLz9rV2I8XqvAjbsxj+O6wOGMpvM8eVAzs/PS86+r0/Pm/KT2uf7IT6UNGN34xZnT49/evk0x/Inl0Vh+f
+6kUqjCesr/NegcrVJ8fvDl0ELiCAFPJWTlVDs/6Mp1PTyyp5FC/jhVjFuv4ZsnG1/HgjnFp/Hos870492kZ9wZZK1FG5OhzoVUvngevA0hYzRwAA
+"""
+new File(drawDir, "ic_launcher.webp").bytes = java.util.Base64.getMimeDecoder().decode(realIconBase64)
 
 android {
     namespace 'com.example.fbdownloader'
@@ -18,8 +76,8 @@ android {
         applicationId "com.example.fbdownloader"
         minSdk 24
         targetSdk 33
-        versionCode 4
-        versionName "4.0"
+        versionCode 5
+        versionName "5.0"
     }
 
     compileOptions {
