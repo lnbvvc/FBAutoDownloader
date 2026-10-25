@@ -10,11 +10,14 @@
     <application
         android:allowBackup="true"
         android:extractNativeLibs="true"
+        android:icon="@drawable/ic_launcher"
+        android:roundIcon="@drawable/ic_launcher"
         android:label="FB Auto Downloader"
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         android:theme="@android:style/Theme.DeviceDefault.NoActionBar">
 
+        <!-- شاشة الإعدادات الرئيسية -->
         <activity
             android:name=".MainActivity"
             android:exported="true">
@@ -24,6 +27,7 @@
             </intent-filter>
         </activity>
 
+        <!-- النشاط الخفي لاستقبال مشاركة الفيديو من فيسبوك -->
         <activity
             android:name=".ShareActivity"
             android:exported="true"
@@ -36,6 +40,7 @@
             </intent-filter>
         </activity>
 
+        <!-- خدمة التحميل الخلفية مع شريط الإشعارات الحي -->
         <service
             android:name=".DownloadService"
             android:exported="false"
